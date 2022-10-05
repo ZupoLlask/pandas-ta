@@ -44,7 +44,7 @@ def qqe(
         length (int): RSI period. Default: 14
         smooth (int): RSI smoothing period. Default: 5
         factor (float): QQE Factor. Default: 4.236
-        mamode (str): See ``help(ta.ma)``. Default: 'sma'
+        mamode (str): See ``help(ta.ma)``. Default: 'ema'
         drift (int): The difference period. Default: 1
         offset (int): How many periods to offset the result. Default: 0
 
@@ -158,7 +158,7 @@ def qqe(
     # Name and Category
     _props = f"{_mode}_{length}_{smooth}_{factor}"
     qqe.name = f"QQE{_props}"
-    rsi_ma.name = f"QQE{_props}_RSI{_mode.upper()}MA"
+    rsi_ma.name = f"QQE{_props}_RSI_{_mode.upper()}MA"
     qqe_long.name = f"QQEl{_props}"
     qqe_short.name = f"QQEs{_props}"
     qqe.category = rsi_ma.category = "momentum"
