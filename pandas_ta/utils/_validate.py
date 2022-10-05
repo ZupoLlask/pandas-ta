@@ -53,27 +53,27 @@ def v_dataframe(obj: MaybeSeriesFrame) -> None:
 def v_float(
     var: IntFloat, default: IntFloat, ne: Optional[IntFloat] = 0.0
 ) -> Float:
-    """Returns the default if var is not equal to the ne value."""
+    """Returns the default if var is not a float different from the ne value."""
     is_ne, is_var = isinstance(ne, (float, int)), isinstance(var, (float, int))
     if is_ne and is_var and float(var) != float(ne):
         return float(var)
     return float(default)
 
 def v_int(var: Int, default: Int, ne: Optional[Int] = 0) -> Int:
-    """Returns the default if var is not equal to the ne value."""
+    """Returns the default if var is not a integer different from the ne value."""
     is_ne, is_var = isinstance(ne, int), isinstance(var, int)
     if is_ne and is_var and int(var) != int(ne):
         return int(var)
     return int(default)
 
 def v_str(var: str, default: str) -> str:
-    """"Returns the default value if var is not a empty str"""
+    """"Returns the default if var is not a (not empty) string."""
     if isinstance(var, str) and len(var) > 0:
         return f"{var}"
     return f"{default}"
 
 def v_ascending(var: bool) -> bool:
-    """Returns True by default"""
+    """Returns True by default."""
     return partial(v_bool, default=True)(var=var)
 
 def v_datetime_ordered(df: SeriesFrame) -> bool:
@@ -84,11 +84,11 @@ def v_datetime_ordered(df: SeriesFrame) -> bool:
     return False
 
 def v_drift(var: Int) -> Int:
-    """Defaults to 1"""
+    """Returns 1 by default."""
     return partial(v_int, default=1, ne=0)(var=var)
 
 def v_list(var: List, default: List = []) -> List:
-    """Returns [] if not a valid list"""
+    """Returns the default if var is not a (not empty) list."""
     if isinstance(var, list) and len(var) > 0:
         return var
     return default
@@ -97,7 +97,7 @@ def v_lowerbound(
     var: IntFloat, bound: IntFloat = 0,
     default: IntFloat = 0, strict: bool = True, complement: bool = False
 ) -> IntFloat:
-    """Returns the default if var(iable) not greater(equal) than bound."""
+    """Returns the default if var is not greater(equal) than bound."""
     var_type = None
     if isinstance(var, float): var_type = float
     if isinstance(var, int): var_type = int
@@ -121,7 +121,7 @@ def v_mamode(var: str, default: str) -> str: # Could be an alias.
     return v_str(var, default)
 
 def v_offset(var: Int) -> Int:
-    """Defaults to 0"""
+    """Returns 0 by default."""
     return partial(v_int, default=0, ne=0)(var=var)
 
 def v_pos_default(
@@ -145,11 +145,11 @@ def v_series(series: Series, length: Optional[IntFloat] = 0) -> Optional[Series]
     return None
 
 def v_talib(var: bool) -> bool:
-    """Returns True by default"""
+    """Returns True by default."""
     return partial(v_bool, default=True)(var=var)
 
 def v_tradingview(var: bool) -> bool:
-    """Returns True by default"""
+    """Returns True by default."""
     return partial(v_bool, default=True)(var=var)
 
 def v_upperbound(
