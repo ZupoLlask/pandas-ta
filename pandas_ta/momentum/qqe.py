@@ -156,9 +156,9 @@ def qqe(
         qqe_short.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
-    _props = f"{_mode}_{length}_{smooth}_{factor}"
+    _props = f"_{_mode}_{length}_{smooth}_{factor}"
     qqe.name = f"QQE{_props}"
-    rsi_ma.name = f"QQE{_props}_RSI_{_mode.upper()}MA"
+    rsi_ma.name = f"RSIma_{length}_{_mode.upper()}_{smooth}"
     qqe_long.name = f"QQEl{_props}"
     qqe_short.name = f"QQEs{_props}"
     qqe.category = rsi_ma.category = "momentum"
