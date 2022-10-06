@@ -248,18 +248,24 @@ def qqe2(
     qqe_short.name = f"QQE2s{_props}"
     qqe.category = rsi_ma.category = "momentum"
     qqe_long.category = qqe_short.category = qqe.category
-    qqe_level.name = "QQE2lvl"
-    trend.name = "QQE2mom"
-    qqe_trigger.name = "QQE2t"
-    qqe_level.category = qqe_trigger.category = trend.category = qqe.category
 
     data = {
         qqe.name: qqe, rsi_ma.name: rsi_ma,
         # long.name: long, short.name: short
-        qqe_long.name: qqe_long, qqe_short.name: qqe_short,
-        qqe_level.name: qqe_level, 
-        trend.name: trend, qqe_trigger.name: qqe_trigger
+        qqe_long.name: qqe_long, qqe_short.name: qqe_short
     }
+
+    if qqemode == 1:
+        qqe_level.name = "QQE2lvl"
+        trend.name = "QQE2mom"
+        qqe_trigger.name = "QQE2t"
+        qqe_level.category = qqe_trigger.category = trend.category = qqe.category
+
+        data = { **data,
+            qqe_level.name: qqe_level, 
+            trend.name: trend, qqe_trigger.name: qqe_trigger
+        }
+    
     df = DataFrame(data)
     df.name = f"QQE2{_props}"
     df.category = qqe.category
