@@ -55,6 +55,8 @@ def qqe2(
     Returns:
         pd.DataFrame: QQE, RSI_MA (basis), QQEl (long), QQEs (short) columns.
     """
+    qqemode = 0
+
     # Validate
     length = v_pos_default(length, 14)
     smooth = v_pos_default(smooth, 5)
@@ -73,7 +75,8 @@ def qqe2(
                     high = v_series(kwargs[kw], _length)
                 if kw.lower() in ["low", "lo"]:
                     low = v_series(kwargs[kw], _length)
-            if all(serie is not None and serie.size == close.size for serie in [high, low]):
+            if all(serie is None or serie.size != close.size for serie in [high, low]):
+                print("#1")
                 return  # Emergency Break
         elif kwargs["qqemode"] > 1:
             return
@@ -85,13 +88,17 @@ def qqe2(
         low = v_series(Series(nan, index=close.index), _length)
 
     factor = v_scalar(factor, 4.236)
-    mamode = v_mamode(mamode, "ema")
+    mamode = v_mamode(mamode.lower(), "ema")
     drift = v_drift(drift)
     offset = v_offset(offset)
 
+    if mamode.lower() in ma():
+        _mode = mamode
+    else:
+        return
+
     # Calculate
     rsi_ = rsi(close, length)
-    _mode = mamode.lower()[0] if mamode != "ema" else ""
     rsi_ma = ma(mamode, rsi_, length=smooth)
 
     # RSI MA True Range
@@ -241,7 +248,7 @@ def qqe2(
         qqe_short.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
-    _props = f"_{_mode}_{length}_{smooth}_{factor}"
+    _props = f"_{_mode.upper()}_{length}_{smooth}_{factor}"
     qqe.name = f"QQE2{_props}"
     rsi_ma.name = f"RSIma_{length}_{_mode.upper()}_{smooth}"
     qqe_long.name = f"QQE2l{_props}"
@@ -262,6 +269,7 @@ def qqe2(
         qqe_level.category = qqe_trigger.category = trend.category = qqe.category
 
         data = { **data,
+            "close": close, "low": low, "high": high,
             qqe_level.name: qqe_level, 
             trend.name: trend, qqe_trigger.name: qqe_trigger
         }
