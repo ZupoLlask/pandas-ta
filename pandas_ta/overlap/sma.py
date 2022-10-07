@@ -21,8 +21,10 @@ except ImportError:
 @njit
 def np_sma(x: Array, n: Int):
     """https://github.com/numba/numba/issues/4119"""
-    result = convolve(ones(n) / n, x)[n - 1:1 - n]
-    return np_prepend(result, n - 1)
+    slice_end = 1 - n if n > 1 and n <= x.size else x.size
+    out_size = n - 1 if n > 0 and n <= x.size else x.size
+    result = convolve(ones(n) / n, x)[n - 1:slice_end]
+    return np_prepend(result, out_size)
 
 # SMA: Alternative Implementations
 # @njit
