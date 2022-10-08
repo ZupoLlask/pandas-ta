@@ -76,7 +76,6 @@ def qqe2(
                 if kw.lower() in ["low", "lo"]:
                     low = v_series(kwargs[kw], _length)
             if all(serie is None or serie.size != close.size for serie in [high, low]):
-                print("#1")
                 return  # Emergency Break
         elif kwargs["qqemode"] > 1:
             return
@@ -129,6 +128,7 @@ def qqe2(
 
     if qqemode == 1:
         qqe = Series(nan, index=close.index)
+        qqe_zigzag = Series(nan, index=close.index)
         qqe_level = Series(nan, index=close.index)
         qqe_trigger = Series(0, index=close.index)
         qqe_xlong = Series(0, index=close.index)
@@ -156,17 +156,17 @@ def qqe2(
         if   qqemode == 1:
             # trend_up, trend_down = qqe_goingup, qqe_goingdown
             # long, short = longband, shortband
-            # newshortband, newlongband = upperband, lowerband
+            # upperband, lowerband = newshortband, newlongband
             # qqe_xlong, qqe_xshort [0 = False, !0 = True?] = QQExlong, QQExshort [0 = False, 1 = True]
             # qqe_high, qqe_low = last_qqe_high, last_qqe_low
-            # qqeLong, qqeShort = qqe_long, qqe_short
+            # qqe_long, qqe_short = qqeLong, qqeShort
             # qqe = qqnew
 
             qqe_xlong.iloc[i] = qqe_xlong.iloc[i - 1]
             qqe_xshort.iloc[i] = qqe_xshort.iloc[i - 1]
             
-            c_trend_up, p_trend_up = qqe_xlong.max() > qqe_xshort.max(), qqe_xlong[:-1].max() > qqe_xshort[:-1].max()
-            c_trend_down, p_trend_down = qqe_xshort.max() > qqe_xlong.max(), qqe_xshort[:-1].max() > qqe_xlong[:-1].max()
+            c_trend_up, p_trend_up = qqe_xlong.iloc[i] > qqe_xshort.iloc[i], qqe_xlong.iloc[i - 1] > qqe_xshort.iloc[i - 1]
+            c_trend_down, p_trend_down = qqe_xshort.iloc[i] > qqe_xlong.iloc[i], qqe_xshort.iloc[i - 1] > qqe_xlong.iloc[i - 1]
             c_high, p_qqe_high = high.iloc[i], qqe_high.iloc[i - 1]
             c_low, p_qqe_low = low.iloc[i], qqe_low.iloc[i - 1]
 
@@ -175,16 +175,10 @@ def qqe2(
 
             if (c_high > c_qqe_high) or (c_rsi > c_short):
                 trend.iloc[i] = 1
-                #qqe.iloc[i] = qqe_long.iloc[i] = long.iloc[i]
             elif (c_low < c_qqe_low) or (c_rsi < c_long):
                 trend.iloc[i] = -1
-                #qqe.iloc[i] = qqe_short.iloc[i] = short.iloc[i]
             else:
                 trend.iloc[i] = trend.iloc[i - 1]
-                #if trend.iloc[i] == 1:
-                #    qqe.iloc[i] = qqe_long.iloc[i] = long.iloc[i]
-                #else:
-                #    qqe.iloc[i] = qqe_short.iloc[i] = short.iloc[i]
 
             qqe_level.iloc[i] = long.iloc[i] if trend.iloc[i] == 1 else short.iloc[i]
 
@@ -192,18 +186,20 @@ def qqe2(
                 qqe_xlong.iloc[i] = i
                 qqe_long.iloc[i] = long.iloc[i]
                 qqe.iloc[i] = qqe_level.iloc[i - 1] - 50
+                qqe_high.iloc[i] = high.iloc[i]
+                qqe_zigzag.iloc[i] = qqe_low.iloc[i - 1]
                 qqe_trigger.iloc[i] = 1
             else:
-                qqe_xlong.iloc[i] = 0
                 qqe_long.iloc[i] = long.iloc[i]
 
             if trend.iloc[i] == -1 and trend.iloc[i - 1] == 1:
                 qqe_xshort.iloc[i] = i
                 qqe_short.iloc[i] = short.iloc[i]
                 qqe.iloc[i] = qqe_level.iloc[i - 1] - 50
+                qqe_low.iloc[i] = low.iloc[i]
+                qqe_zigzag.iloc[i] = qqe_high.iloc[i - 1]
                 qqe_trigger.iloc[i] = -1
             else:
-                qqe_xshort.iloc[i] = 0
                 qqe_short.iloc[i] = short.iloc[i]
 
         elif qqemode == 0:
@@ -266,12 +262,16 @@ def qqe2(
         qqe_level.name = "QQE2lvl"
         trend.name = "QQE2mom"
         qqe_trigger.name = "QQE2t"
-        qqe_level.category = qqe_trigger.category = trend.category = qqe.category
+        qqe_zigzag.name = "QQE2zz"
+        qqe_level.category = trend.category = qqe.category
+        qqe_trigger.category = qqe_zigzag.category = qqe.category
 
         data = { **data,
             "close": close, "low": low, "high": high,
-            qqe_level.name: qqe_level, 
-            trend.name: trend, qqe_trigger.name: qqe_trigger
+            qqe_level.name: qqe_level, trend.name: trend, 
+            #"xlong": qqe_xlong, "xshort": qqe_xshort, 
+            #"qhigh": qqe_high, "qlow": qqe_low, 
+            qqe_trigger.name: qqe_trigger, qqe_zigzag.name: qqe_zigzag
         }
     
     df = DataFrame(data)
